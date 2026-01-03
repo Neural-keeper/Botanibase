@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gardening Demo</title>
+</head>
+<body>
+  <h1>What should I plant?</h1>
+
+  <label>
+    Month (1–12):
+    <input type="number" id="monthInput" min="1" max="12" value="4" />
+  </label>
+
+  <br /><br />
+
+  <button onclick="getRecommendations()">
+    Get Recommendations
+  </button>
+
+  <h2>Results</h2>
+  <ul id="results"></ul>
+
+  <script>
+    async function getRecommendations() {
+      const month = Number(document.getElementById("monthInput").value);
+
+      const response = await fetch("/recommend", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ month })
+      });
+
+      const data = await response.json();
+
+      const resultsList = document.getElementById("results");
+      resultsList.innerHTML = "";
+
+      data.recommendations.forEach(plant => {
+        const li = document.createElement("li");
+        li.textContent = plant.name;
+        resultsList.appendChild(li);
+      });
+    }
+  </script>
+</body>
+</html>
