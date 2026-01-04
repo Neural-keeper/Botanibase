@@ -1,3 +1,5 @@
+const db = require("./db/database");
+
 const express = require("express");
 const path = require("path");
 
@@ -8,23 +10,29 @@ app.use(express.json());
 // Serve static files
 app.use(express.static(path.join(__dirname, "public")));
 
-// TEMP DATA
-const plants = [
-  { name: "Basil", startMonth: 4, endMonth: 9 },
-  { name: "Lettuce", startMonth: 3, endMonth: 5 },
-  { name: "Garlic", startMonth: 9, endMonth: 11 }
-];
-
 // API
 app.post("/recommend", (req, res) => {
   const { month } = req.body;
 
-  const results = plants.filter(
-    plant => month >= plant.startMonth && month <= plant.endMonth
-  );
+  if (!month || month < 1 || month > 12) {
+    return res.status(400).json({ error: "Invalid month" });
+  }
 
-  res.json({ recommendations: results });
+  const query = `
+    SELECT name
+    FROM plants
+    WHERE start_month <= ? AND end_month >= ?
+  `;
+
+  db.all(query, [month, month], (err, rows) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+
+    res.json({ recommendations: rows });
+  });
 });
+
 
 // Root route (optional clarity)
 app.get("/", (req, res) => {
